@@ -3,6 +3,6 @@
 
 require './lib/uptime.rb'
 
-Uptime.new.preflight
+Uptime.new(ARGV).preflight
 
 
