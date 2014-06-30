@@ -27,7 +27,7 @@ GEM
     rspec-mocks (3.0.1)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.0)
-    terminal-notifier (1.6.0)
+    terminal-notifier-guard (1.5.3)
     thread_safe (0.3.4)
     tzinfo (1.2.1)
       thread_safe (~> 0.1)
@@ -41,5 +41,5 @@ PLATFORMS
 DEPENDENCIES
   nokogiri
   rspec
-  terminal-notifier
+  terminal-notifier-guard (~> 1.5.3)
   whenever

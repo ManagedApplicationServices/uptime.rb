@@ -1,7 +1,7 @@
 require 'yaml'
 require 'nokogiri'
 require 'open-uri'
-require 'terminal-notifier'
+require 'terminal-notifier-guard'
 
 APP_PATH   = Dir.pwd
 VERSION    = "0.9"
@@ -41,15 +41,15 @@ class Uptime
   end
 
   def notify! monitor = {}
-    if TerminalNotifier.available?
+    if TerminalNotifier::Guard.available?
       message  = "#{monitor[:url]}"
       title    = "#{monitor[:friendly_name]} is down"
       group    = Process.pid
       subtitle = 'Monitor alert'
 
-      TerminalNotifier.notify(message, title: title, group: group, subtitle: subtitle)
+      TerminalNotifier::Guard.failed(message, title: title, group: group, subtitle: subtitle)
       #`terminal-notifier -group 'uptime-alert' -title "#{monitor[:friendly_name]} is down" -subtitle 'Monitor alert' -message "#{monitor[:url]}"` rescue puts  "#{monitor[:friendly_name]} is down"
-      sleep 3
+      delay 3
     end
   end
 
@@ -141,6 +141,10 @@ class Uptime
   end
 
   private
+
+  def delay(interval)
+    sleep interval unless ENV['RUBY_ENV'] == 'test'
+  end
 
   def log(message)
     puts message unless ENV['RUBY_ENV'] == 'test'
