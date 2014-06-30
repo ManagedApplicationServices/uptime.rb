@@ -1,0 +1,4 @@
+<monitors offset="0" limit="50" total="2">
+  <monitor id="12345678" friendlyname="UP Server" url="https://up.example.com" type="1" subtype="" keywordtype="" keywordvalue="" httpusername="" httppassword="" port="" status="2" alltimeuptimeratio="99.8"/>
+  <monitor id="12345679" friendlyname="DOWN Server" url="https://down.example.com" type="1" subtype="" keywordtype="" keywordvalue="" httpusername="" httppassword="" port="" status="9" alltimeuptimeratio="100"/>
+</monitors>
