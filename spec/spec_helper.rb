@@ -14,6 +14,13 @@
 # users commonly want.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+
+ENV['RUBY_ENV'] = 'test'
+SPEC_PATH       = Dir.pwd
+FIXTURES_PATH   = File.join(SPEC_PATH, "spec", "fixtures")
+SPEC_CONFIG     = File.join(FIXTURES_PATH, "config.yml")
+FAKE_XML_PATH   = File.join(FIXTURES_PATH, "fake_result.xml")
+
 Dir.glob("./lib/**/*.rb").each do |rb|
   require rb
 end

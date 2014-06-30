@@ -1,16 +1,14 @@
 require 'yaml'
 require 'nokogiri'
 require 'open-uri'
+require 'terminal-notifier'
 
 APP_PATH   = Dir.pwd
 VERSION    = "0.9"
 BETA       = true
 
 class Uptime
-  LAST_ITEM   = ".last_item"
-  CONFIG_FILE = File.join(APP_PATH, "config", "config.yml")
-  CONFIG      = YAML::load_file(CONFIG_FILE)
-  URL         = "http://api.uptimerobot.com/getMonitors/?apiKey=#{CONFIG["UPTIME_ROBOT"]["API_KEY"]}"
+  UPGRADE_MESSAGE = "Warning: Uptime.rb requires Mountain Lion and above. Please upgrade your operating system.\n\n"
 
   COMMANDS    = {
     "--install"    => :install,
@@ -21,20 +19,51 @@ class Uptime
     nil            => :monitor
   }
 
+  attr_accessor :arguments, :config, :url
+
+  def set_url
+    @url = "http://api.uptimerobot.com/getMonitors/?apiKey=#{@config["UPTIME_ROBOT"]["API_KEY"]}"
+  end
+
+  def config_file
+    File.join(APP_PATH, "config", "config.yml")
+  end
+
+  def load_config
+      @config = YAML::load_file(config_file) if File.exist?(config_file)
+  end
+
+  def initialize args = []
+    @arguments = args
+    load_config
+    set_url
+    self
+  end
+
+  def notify! monitor = {}
+    if TerminalNotifier.available?
+      message  = "#{monitor[:url]}"
+      title    = "#{monitor[:friendly_name]} is down"
+      group    = Process.pid
+      subtitle = 'Monitor alert'
+
+      TerminalNotifier.notify(message, title: title, group: group, subtitle: subtitle)
+      #`terminal-notifier -group 'uptime-alert' -title "#{monitor[:friendly_name]} is down" -subtitle 'Monitor alert' -message "#{monitor[:url]}"` rescue puts  "#{monitor[:friendly_name]} is down"
+      sleep 3
+    end
+  end
+
   def monitor
-    doc = Nokogiri::XML(open(URL))
+    doc = Nokogiri::XML(open(@url))
     doc.xpath("//monitor").each do |item|
-      if item['status'] != "2"
-        `terminal-notifier -group 'mas-alert' -title "#{item['friendlyname']} is down" -subtitle 'Monitor alert' -message "#{item['url']}"` rescue puts  "#{item['friendlyname']} is down"
-        sleep 3
-      end
+      notify! friendly_name: item['friendlyname'], url: item['url'] if item['status'] != "2"
     end
   end
 
   def banner
-    puts"\n"
-    puts "Uptime.rb, version #{self.version_string} - A UptimeRobot.com OS X notifier"
-    puts "Copyright © 2014 Sam Hon \n\n"
+    log "\n"
+    log "Uptime.rb, version #{self.version_string} - A UptimeRobot.com OS X notifier"
+    log "Copyright © 2014 Sam Hon \n\n"
   end
 
   def copyright
@@ -100,14 +129,20 @@ class Uptime
 
   def show_upgrade_os
     self.banner
-    puts "Warning: Uptime.rb requires Mountain Lion and above. Please upgrade your operating system.\n\n"
+    log Uptime::UPGRADE_MESSAGE
   end
 
   def preflight
     if os_compatible?
-      self.send(COMMANDS[ARGV.first])
+      self.send(COMMANDS[@arguments.first])
     else
       self.show_upgrade_os
     end
+  end
+
+  private
+
+  def log(message)
+    puts message unless ENV['RUBY_ENV'] == 'test'
   end
 end
